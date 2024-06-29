@@ -1,0 +1,513 @@
+what is angular?
+	-> angular is a javascript framework that allows to build reactive single page applciations.
+
+angular cli
+	-> we will use angular cli to create the angular project
+
+envirnment setup and creating first angular project
+	-> install the node js from the below path https://nodejs.org/en/
+
+	why node js?
+	-> behind the scene angular cli uses the node to bundled the dependancy
+	
+	-> after installing the node js, open the cmd and run the below commands to check nodejs is installed properly
+		node -v
+		npm -v
+
+	-> Now globally install the angular cli in your machine using the below command
+		npm install -g @angular/cli  -> to globally install the angular cli
+		ng new my-dream-app	     -> to create the angular project
+		cd my-dream-app		     -> changing the directory to project
+		ng serve 			     -> to run the project
+
+
+	-> access the app using below url
+		http://localhost:4200/
+
+	-> download the visual studio editor using the below url 
+		https://code.visualstudio.com/download
+
+course structure
+	-> basics
+	-> components and bindings
+	-> Directives
+	-> services and dependancy injection
+	-> routing
+	-> observables
+	-> forms
+	-> pipes
+	-> http
+	-> authentication 
+	-> optimizations and ng modules
+	-> deployment
+	-> animations and testing
+
+TypeScript
+	-> It has more features than vanilla JS(Types, interfaces, classes)
+	-> TypeScript is not run in the browser, it needs to be compiled to javascript, 
+	   javascript will run on the browser, compilation of typescript to javascript is done by the angular cli.
+					Compile
+		TypeScript  ------------------> JavaScript
+
+
+installing bootstrap in the project 
+	-> use the below command to locally install the bootstrap
+		npm install --save bootstrap@3
+	-> in the angular.json file , architect -> build -> options -> styles we have 
+		src/styles.css
+ 	   this file contains the css that will be applicable for all the component. it is a global css for the applciation 
+	-> we have added the boostrap to the project, so we need to add the entry in the angular.json file 
+		"styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "src/styles.css"
+            ],
+	-> in the style.css add the below import
+		@import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+
+
+components
+ 	-> it is typescript class, angular application will instatiate it.
+	-> it has a decorator called @Component which specifies the template, selector and styles
+
+	ServerComponent
+	import { Component } from '@angular/core'
+
+	@Component({
+		selector: 'app-server',
+		templateUrl: './server.component.html'
+	})
+	export class ServerComponent{
+	
+	}
+	
+	-> now we created the component, but we need to mention in the module, in the @declaration we need to register
+	   the created component
+	import { NgModule } from '@angular/core';
+	import { BrowserModule } from '@angular/platform-browser';
+
+	import { AppComponent } from './app.component';
+	import { ServerComponent } from './server/server.component';
+
+	@NgModule({
+  	declarations: [
+    		AppComponent,
+    		ServerComponent
+  	],
+  	imports: [
+    		BrowserModule
+  	],
+  	providers: [],
+  	bootstrap: [AppComponent]
+	})
+	export class AppModule { }
+
+	-> instead of creating component manually, angular cli provides a ways to create the component.
+	   we can use the below command to create the component
+	   ng generate component servers
+
+	@Component Properties
+	-> we have below properties for component
+		- selector
+		- template or templateUrl
+		- styles or styleUrls
+
+	-> we can provide the inline tempate or external template in the component
+		inline template we can provide using template property
+			template: `<app-servers>
+					</app-servers>`
+		
+		external template we can provide using templateUrl property
+			templateUrl: ./server.component.html
+
+	-> similarly we can have the inline and external css in the component
+		inline css we can provide using the styels property
+			styles: [`
+    				h3{
+     					 color: red
+   				}
+  			`]
+		external css we can provide using the styleUrls property
+			styles: [`
+    				h3{
+      				color: red
+    				}
+  			`]
+
+		note : both properties takes the array data type
+
+	-> selector : it is just like a tag in html, it should be unique in the application
+		
+		if selector is 
+			selector : 'app-server'
+		then we should use as a selector i.e <app-server></app-server>
+
+		if selector is 
+			selector : '[app-server]'
+		then we should use as a property i.e <div app-server></div>
+
+		if selector is
+			selector : '.app-server'
+		then we should use as a class i.e <div class="app-server"></div>
+	
+
+Data Binding
+	-> from the typescript code we ill call the the back end and so the calculation these result we need to use it in the
+	   html i.e template
+	-> data binding provides the communication between the typescript code and the html (template)
+	-> types of data binding
+			- interpolation  => {{data}}
+			- property binding  => [property] = "data"
+			- event binding => (event) = "expression"
+			- two way binding => [(ngModel)] ="data"  => combination of both
+
+	-> Interpolation 
+		-> sintax is {{ variable_name }}
+		
+		-> component file	
+			export class ServerComponent{
+
+    				serverId:number = 10;
+    				serverStatus:string = "offline";
+
+    				getServerStatus(){
+        				return this.serverStatus;
+    				}
+
+			}
+		
+		-> template file
+			<h2>{{'Server'}} with ID - {{serverId}} is {{ getServerStatus()}}</h2>
+
+	-> Property Binding
+		-> sintax is [property-name] = "varibale-name-in-js"
+		-> component file
+			export class ServersComponent implements OnInit {
+
+  				allowNewServer:boolean = false;
+
+  				constructor() { 
+    
+    					setTimeout(() => {
+      					this.allowNewServer = true;
+    					}, 2000);
+
+  				}
+
+  				ngOnInit(): void {
+  				}
+
+			}
+		
+		-> template file
+			<button [disabled] = "!allowNewServer" class="btn btn-primary">Add New Server</button>
+			<div class="app-server"></div>
+			<div class="app-server"></div>
+		
+	-> Event Binding
+		-> sintax is (click)="fns-name()"
+		-> component file
+			export class ServersComponent implements OnInit {
+
+  				allowNewServer:boolean = false;
+  				serverCreationStatus = "No server created!!!"
+
+  				constructor() { 
+    
+    					setTimeout(() => {
+      					this.allowNewServer = true;
+    					}, 2000);
+
+  				}	
+
+ 				onAddServer(){
+    					this.serverCreationStatus = "Server was created!!!";
+				}
+			}
+		-> template file
+			<button [disabled] = "!allowNewServer" (click)="onAddServer()" class="btn btn-primary">Add New Server</button>
+			<p>{{serverCreationStatus}}</p>
+			<div class="app-server"></div>
+			<div class="app-server"></div>
+	 
+		-> using event object in event binding
+			component file
+			export class ServersComponent implements OnInit {
+
+  				allowNewServer:boolean = false;
+  				serverCreationStatus = "No server created!!!"
+  				serverName:string = "";
+
+  				constructor() { 
+    
+    					setTimeout(() => {
+      					this.allowNewServer = true;
+    					}, 2000);
+
+  				}
+
+  				onAddServer(){
+    					this.serverCreationStatus = "Server was created!!!";
+  				}
+
+  				onUpdateServerName(event:Event){
+    					console.log(event);
+    					this.serverName = (<HTMLInputElement>event.target).value;
+  				}
+
+  				ngOnInit(): void {
+  				}
+
+			}
+
+			template file
+			<label>Server Name</label>
+			<input class="form-control" type="text" (input)="onUpdateServerName($event)"/>
+			<p>{{serverName}}</p>
+			<button [disabled] = "!allowNewServer" (click)="onAddServer()" class="btn btn-primary">Add New Server</button>
+			<p>{{serverCreationStatus}}</p>
+			<div class="app-server"></div>
+			<div class="app-server"></div>
+
+	-> Two-Way Data Binding
+		-> sintax is [(ngModel)]="variable name"
+		-> to use two way binding we have tohave the Forms Module imported in the module 
+		-> module file 
+			import { NgModule } from '@angular/core';
+			import { FormsModule } from '@angular/forms';
+			import { BrowserModule } from '@angular/platform-browser';
+
+			import { AppComponent } from './app.component';
+			import { ServerComponent } from './server/server.component';
+			import { ServersComponent } from './servers/servers.component';
+
+			@NgModule({
+  				declarations: [
+   					AppComponent,
+    					ServerComponent,
+    				ServersComponent
+  				],
+  				imports: [
+    					BrowserModule,
+    					FormsModule
+  				],
+  				providers: [],
+  				bootstrap: [AppComponent]
+			})
+			export class AppModule { }
+
+		-> component file 
+				export class ServersComponent implements OnInit {
+
+  				allowNewServer:boolean = false;
+  				serverCreationStatus = "No server created!!!"
+  				serverName:string = "";
+
+  				constructor() { 
+    
+    					setTimeout(() => {
+      					this.allowNewServer = true;
+    					}, 2000);
+
+  				}
+
+  				onAddServer(){
+    					this.serverCreationStatus = "Server was created!!!";
+  				}
+
+  				onUpdateServerName(event:Event){
+    					console.log(event);
+    					this.serverName = (<HTMLInputElement>event.target).value;
+  				}
+
+  				ngOnInit(): void {
+  				}
+
+			}
+	
+		-> template file
+			<label>Server Name</label>
+			<input class="form-control" type="text" [(ngModel)]="serverName"/>
+			<p>{{serverName}}</p>
+			<button [disabled] = "!allowNewServer" (click)="onAddServer()" class="btn btn-primary">Add New Server</button>
+			<p>{{serverCreationStatus}}</p>
+			<div class="app-server"></div>
+			<div class="app-server"></div>
+
+Directives
+	-> directives are the instructions in the DOM
+	
+	-> ngIf directive
+		-> it start with * => *ngIf="expression"
+		
+		-> component file
+			export class ServersComponent implements OnInit {
+
+  				allowNewServer:boolean = false;
+  				serverCreationStatus = "No server created!!!"
+  				serverName:string = "";
+  				isServerCreated:boolean = false;
+
+  				constructor() { 
+    
+    					setTimeout(() => {
+     					 this.allowNewServer = true;
+    					}, 2000);
+
+  				}
+
+  				onAddServer(){
+    					this.isServerCreated = true;
+    					this.serverCreationStatus = "Server was created!!! " + "Name is " + this.serverName;
+  				}
+
+  				onUpdateServerName(event:Event){
+    					console.log(event);
+    					this.serverName = (<HTMLInputElement>event.target).value;
+  				}
+
+  				ngOnInit(): void {
+  				}
+
+			}
+	
+		 -> template file
+			<label>Server Name</label>
+			<input class="form-control" type="text" [(ngModel)]="serverName"/>
+			<br>
+			<button [disabled] = "!allowNewServer" (click)="onAddServer()" class="btn btn-primary">Add New Server</button>
+			<p *ngIf="isServerCreated">{{serverCreationStatus}}</p>
+			<div class="app-server"></div>
+			<div class="app-server"></div>
+
+	-> else condition using ng-template
+		-> template file
+			<label>Server Name</label>
+			<input class="form-control" type="text" [(ngModel)]="serverName"/>
+			<br>
+			<button [disabled] = "!allowNewServer" (click)="onAddServer()" class="btn btn-primary">Add New Server</button>
+
+			<p *ngIf="isServerCreated; else noServer">{{serverCreationStatus}}</p>
+				<ng-template #noServer>
+    					<p>No server was created</p>
+				</ng-template>
+			<div class="app-server"></div>
+			<div class="app-server"></div>
+
+	->dynamically add css 
+		-> ngStyle
+			-> component class
+				export class ServerComponent{
+
+    				serverId:number = 10;
+    				serverStatus:string = "offline";
+    
+    				constructor(){
+        				this.serverStatus = Math.random() > 0.5 ? 'online' : 'offline';
+    				}
+
+    				getServerStatus(){
+        				return this.serverStatus;
+    				}
+
+    				getColor(){
+       				 return this.serverStatus === 'online' ? 'green' : 'red';
+    				}
+
+				}
+			->template class
+				<h2 [ngStyle]="{backgroundColor:getColor()}">{{'Server'}} with ID - {{serverId}} is {{ getServerStatus()}}</h2>
+
+		->ngClass
+			-> component file
+				@Component({
+    				//selector: 'app-server',
+    				//selector: '[app-server]',
+    				selector: '.app-server',
+    				templateUrl : './server.component.html',
+    				styles: [`
+    					.online{
+        					color:white
+    					}`]
+				})
+				export class ServerComponent{
+
+    				serverId:number = 10;
+    				serverStatus:string = "offline";
+    
+    				constructor(){
+        				this.serverStatus = Math.random() > 0.5 ? 'online' : 'offline';
+    				}
+
+    				getServerStatus(){
+        				return this.serverStatus;
+    				}
+
+    				getColor(){
+        				return this.serverStatus === 'online' ? 'green' : 'red';
+    				}
+				}
+			-> template file
+				<h2 [ngStyle]="{backgroundColor:getColor()}"
+    					[ngClass]="{online:serverStatus === 'online'}">
+    					{{'Server'}} with ID - {{serverId}} is {{ getServerStatus()}}
+				</h2>
+		
+		->ngFor
+			->component file
+				export class ServersComponent implements OnInit {
+
+  				allowNewServer:boolean = false;
+  				serverCreationStatus = "No server created!!!"
+  				serverName:string = "";
+  				isServerCreated:boolean = false;
+  				servers = ['Testserver-1', 'Testserver-2']
+
+  				constructor() { 
+    
+    					setTimeout(() => {
+      					this.allowNewServer = true;
+    					}, 2000);
+
+  				}
+
+  				onAddServer(){
+    					this.isServerCreated = true;
+    					this.serverCreationStatus = "Server was created!!! " + "Name is " + this.serverName;
+    					this.servers.push(this.serverName);
+  				}
+
+  				onUpdateServerName(event:Event){
+    					console.log(event);
+    					this.serverName = (<HTMLInputElement>event.target).value;
+  				}
+
+  				ngOnInit(): void {
+  				}
+
+				}
+
+			->template file
+				<label>Server Name</label>
+				<input class="form-control" type="text" [(ngModel)]="serverName"/>
+				<br>
+				<button [disabled] = "!allowNewServer" (click)="onAddServer()" class="btn btn-primary">Add New Server</button>
+				<p *ngIf="isServerCreated; else noServer">{{serverCreationStatus}}</p>
+				<ng-template #noServer>
+    						<p>No server was created</p>
+				</ng-template>
+				<div class="app-server"></div> -->
+				<app-server *ngFor="let server of servers"></app-server>
+
+
+Note:
+command to killing port
+npx kill-port 4200
+
+command to run the existing project by importing
+npm install
+if you find any missmatch between angular cli and angular version then just create a new angular project and copy the content of package.json to imported project
+
+
+
+
+

@@ -1,0 +1,331 @@
+Communicating between the components
+	-> we can use below methods to communicate between the components
+		-> custom property binding
+		-> custom event binding
+
+lets say we have three components defined
+	-> app component 
+		->cockpit component 
+		->server element component
+
+in the app component we are rendering the below template
+	-> <div class="container">
+    		<app-cockpit
+    			(serverCreated)="onServerAdded($event)"
+    			(blueprintCreated)="onBlueprintAdded($event)"
+    		></app-cockpit>
+
+  		<hr>
+
+  		<div class="row">
+   			 <div class="col-xs-12">
+       			 <app-server-element 
+        				*ngFor="let serverElement of serverElements"
+        				[srcElement]="serverElement"></app-server-element>
+    			</div>
+  		</div>
+	   </div>
+	
+	-> app component internnaly renders <app-cockpit> and <app-server-element> component
+
+
+	-> custom property binding 
+		creating the custom property in the parent component (app component)
+		-> we will create aa custom property and to that we will assign data like below
+		-> <div class="row">
+   			 <div class="col-xs-12">
+       			 <app-server-element 
+        				*ngFor="let serverElement of serverElements"
+        				[srcElement]="serverElement"></app-server-element>
+    			</div>
+  		  </div>
+		-> for the custom property srcElement we are assigning the serverElement data
+
+		using the custom property binding in the child component (server element component)
+		-> we have to use @Input("alias_name") decorator like below
+		-> export class ServerElementComponent implements OnInit {
+  			//custom property binding without alias name
+  			//@Input() element: {name:string, type:string,content:string}
+
+  			//custom property binding with alias name
+  			@Input('srcElement') element: {name:string, type:string,content:string}
+
+  			constructor() { }
+
+  			ngOnInit(): void {
+  			}
+
+		   }
+		->rendering the data in the template file
+			<div class="panel panel-default">
+       			<div class="panel-heading">{{ element.name }}</div>
+        			<div class="panel-body">
+          				<p>
+            				<strong *ngIf="element.type === 'server'" style="color: red">{{ element.content }}</strong>
+            				<em *ngIf="element.type === 'blueprint'">{{ element.content }}</em>
+          				</p>
+        			</div>
+      		</div>
+
+	-> custom event binding	
+		-> we will create the custom events in the parent component template file like below
+		-> <div class="container">
+    			<app-cockpit
+    				(serverCreated)="onServerAdded($event)"
+    				(blueprintCreated)="onBlueprintAdded($event)"
+    			></app-cockpit>
+  			<hr>
+  			<div class="row">
+    				<div class="col-xs-12">
+        			<app-server-element 
+        			*ngFor="let serverElement of serverElements"
+        			[srcElement]="serverElement"></app-server-element>
+    			</div>
+  		  </div>
+		  </div>
+
+		->mention the event in the component file
+			export class AppComponent {
+  				serverElements = [{
+    					type:"server",
+   					name:'TestServer',
+    					content:"Just a test server"
+  				}];
+
+  				onServerAdded(serverData: {serverName:string,serverContent:string}) {
+    					this.serverElements.push({
+      					type: 'server',
+      					name: serverData.serverName,
+      					content: serverData.serverContent
+    					});
+  				}
+
+  				onBlueprintAdded(blueprintData: {serverName:string,serverContent:string}) {
+    					this.serverElements.push({
+      					type: 'blueprint',
+      					name: blueprintData.serverName,
+     						content: blueprintData.serverContent
+   					 });
+  				}
+
+			}
+
+		->create the custom eventemmiter and emit the event in the child component 
+		-> export class CockpitComponent implements OnInit {
+
+  			newServerName = '';
+  			newServerContent = '';
+  			@Output() serverCreated = new EventEmitter<{serverName:string,serverContent:string}>();
+  			@Output() blueprintCreated  = new EventEmitter<{serverName:string,serverContent:string}>();
+
+  			constructor() { }
+
+  			ngOnInit(): void {
+  			}
+
+  			onAddServer() {
+    				this.serverCreated.emit({
+      				serverName: this.newServerName,
+      				serverContent: this.newServerContent
+    				});
+  			}
+
+  			onAddBlueprint() {
+    				this.blueprintCreated.emit({
+      				serverName: this.newServerName,
+      				serverContent: this.newServerContent
+    				});
+  			}
+
+		 }
+
+		->template file
+			<div class="row">
+    				<div class="col-xs-12">
+      				<p>Add new Servers or blueprints!</p>
+      				<label>Server Name</label>
+      				<input type="text" class="form-control" [(ngModel)]="newServerName">
+      				<label>Server Content</label>
+      				<input type="text" class="form-control" [(ngModel)]="newServerContent">
+     					<br>
+      				<button
+        					class="btn btn-primary"
+        					(click)="onAddServer()">Add Server</button>
+      				<button
+        					class="btn btn-primary"
+        					(click)="onAddBlueprint()">Add Server Blueprint</button>
+    				</div>
+  			</div>
+
+-> View Encapsulation 
+	-> whatever we have defined the css in the component those are specific to that component, these styles are not shared with other component 
+	-> because, angular does this, angular adds a unique attribute to all the dom elements of the component. so if we add the style lets say
+		p{
+			color:red;
+		}
+		=> p[ng-angular-el1]{
+			color:red;
+		}
+	-> we can control this, @Component decorator takes one more property called encapsulation
+			encapsulation: ViewEncapsulation.None
+	-> ViewEncapsulation takes three values
+			-> emulated
+			-> native
+			-> none
+	-> emulated is the default one
+	-> native is similar to emulated but it depends on the browser
+	-> none means it does not enpsulated the view
+
+-> local references in template
+	-> we can define the local reference in the html elements in the template
+	-> we can add local references to any elements in the html
+	-> <div class="row">
+    		<div class="col-xs-12">
+      		<p>Add new Servers or blueprints!</p>
+      		<label>Server Name</label>
+      		<!-- <input type="text" class="form-control" [(ngModel)]="newServerName"> -->
+      		<input type="text" class="form-control" #serverNameInput>
+      		<label>Server Content</label>
+      		<input type="text" class="form-control" [(ngModel)]="newServerContent">
+      		<br>
+      		<button
+        			class="btn btn-primary"
+        			(click)="onAddServer(serverNameInput)">Add Server</button>
+      		<button
+        			class="btn btn-primary"
+        			(click)="onAddBlueprint(serverNameInput)">Add Server Blueprint</button>
+    		</div>
+  	   </div>
+
+	-> export class CockpitComponent implements OnInit {
+
+  		newServerName = '';
+  		newServerContent = '';
+  		@Output() serverCreated = new EventEmitter<{serverName:string,serverContent:string}>();
+  		@Output() blueprintCreated  = new EventEmitter<{serverName:string,serverContent:string}>();
+
+  		constructor() { }
+
+  		ngOnInit(): void {
+  		}
+
+  		onAddServer(serverNameInput:HTMLInputElement) {
+    			// this.serverCreated.emit({
+    			//   serverName: this.newServerName,
+    			//   serverContent: this.newServerContent
+    			// });
+    			this.serverCreated.emit({
+     				 serverName: serverNameInput.value,
+     				 serverContent: this.newServerContent
+    			});
+  		}
+
+  		onAddBlueprint(serverNameInput:HTMLInputElement) {
+    			// this.blueprintCreated.emit({
+    			//   serverName: this.newServerName,
+    			//   serverContent: this.newServerContent
+    			// });
+    			this.blueprintCreated.emit({
+      		serverName: serverNameInput.value,
+    	  		serverContent: this.newServerContent
+    			});
+  		}
+
+	}
+	
+	-> here we are passing the variable name from the template file to component file
+
+->Local references accessing using @ViewChild in the component file
+	-> we will define the local references in the template file
+	-> and we can access in the component file using the @ViewChild decorator
+	-> template file 
+		<div class="row">
+    		<div class="col-xs-12">
+      		<p>Add new Servers or blueprints!</p>
+      		<label>Server Name</label>
+      		<!-- <input type="text" class="form-control" [(ngModel)]="newServerName"> -->
+      		<input type="text" class="form-control" #serverNameInput>
+      		<label>Server Content</label>
+      		<!-- <input type="text" class="form-control" [(ngModel)]="newServerContent"> -->
+      		<input type="text" class="form-control" #serverContentInput>
+      		<br>
+      		<button
+        			class="btn btn-primary"
+        			(click)="onAddServer(serverNameInput)">Add Server</button>
+      		<button
+        			class="btn btn-primary"
+        			(click)="onAddBlueprint(serverNameInput)">Add Server Blueprint</button>
+    		</div>
+  		</div>
+
+	-> component file 
+		export class CockpitComponent implements OnInit {
+
+  			newServerName = '';
+  			newServerContent = '';
+  			@Output() serverCreated = new EventEmitter<{serverName:string,serverContent:string}>();
+  			@Output() blueprintCreated  = new EventEmitter<{serverName:string,serverContent:string}>();
+  			@ViewChild('serverContentInput', {static :false}) serverContentInput: ElementRef;
+  			constructor() { }
+
+  			ngOnInit(): void {
+  			}
+
+  			onAddServer(serverNameInput:HTMLInputElement) {
+    				// this.serverCreated.emit({
+    				//   serverName: this.newServerName,
+    				//   serverContent: this.newServerContent
+    				// });
+    				// this.serverCreated.emit({
+    				//   serverName: serverNameInput.value,
+    				//   serverContent: this.newServerContent
+    				// });
+
+    				this.serverCreated.emit({
+      				serverName: serverNameInput.value,
+      				serverContent: this.serverContentInput.nativeElement.value
+    				});
+  			}
+
+  			onAddBlueprint(serverNameInput:HTMLInputElement) {
+    				// this.blueprintCreated.emit({
+    				//   serverName: this.newServerName,
+    				//   serverContent: this.newServerContent
+    				// });
+    				// this.blueprintCreated.emit({
+    				//   serverName: serverNameInput.value,
+    				//   serverContent: this.newServerContent
+    				// });
+    				this.blueprintCreated.emit({
+      				serverName: serverNameInput.value,
+      				serverContent: this.serverContentInput.nativeElement.value
+    				});
+  			}
+
+		}
+
+lifecycle hooks
+---------------
+-> ngOnChanges -> called afeter a bound input property changes
+-> ngOnInit -> called once the component is initialized
+		-> called after the constructor execution
+-> ngDoCheck -> called during every change detection run (in the component or template)
+-> ngAfterContetnChecked -> called every time the projected contetn has been checked
+-> bgAfterViewInit -> called after the components view (and child views) has been initialized
+-> ngAfterViewChecked -> called every time the view (and child views) have been checked
+-> ngOnDestroy -> called once the component is about to be destroyed
+
+
+
+	
+
+
+		
+
+
+		
+
+
+		
+
+

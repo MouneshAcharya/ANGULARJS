@@ -1,0 +1,149 @@
+SHARING DATA BETWEEN CHILD AND PARENT DIRECTIVES AND COMPONENTS
+===============================================================
+- Implement this pattern with the @Input() and @Output() decorators
+- <parent-component>
+	<child-component></child-component>
+  </parent-component>
+- The <parent-component> serves as the context for the <child-component>
+- @Input and @Output gives child component to communicate with parent component
+- @Input lets the parent component to udpate data in the child component
+- @Output lets the child component to send the data to the parent component
+
+Sending data to a child component
+=================================
+configuring the child component
+-------------------------------
+first import Input
+decorate the property with @Input()
+
+import { Component, Input } from '@angular/core'; // First, import Input
+export class ItemDetailComponent {
+  @Input() item = ''; // decorate the property with @Input()
+}
+
+The value for item comes from the parent component.
+
+configuring the child template 
+------------------------------
+<p>
+  Today's item: {{item}}
+</p>
+
+Configuring the parent
+----------------------
+bind the property in the parent component's template
+
+<app-item-detail [item]="currentItem"></app-item-detail>
+
+<app-item-detail> is a child selector
+[item]="currentItem" is a property binding
+
+configuring the parent component class
+--------------------------------------
+export class AppComponent {
+  currentItem = 'Television';
+}
+
+Angular sends value for currentItem as  Television hence renders Television
+
+		  @Input
+PARENT ---------------> CHILD
+		  dataflow
+		  
+Sending data to a parent component
+==================================
+Configuring the child component
+-------------------------------
+import Output and EventEmtter
+decorate a property with @Output()
+
+import { Output, EventEmitter } from '@angular/core';
+
+@Output() newItemEvent = new EventEmitter<string>();
+
+child component file 
+export class ItemOutputComponent {
+
+  @Output() newItemEvent = new EventEmitter<string>();
+
+  addNewItem(value: string) {
+    this.newItemEvent.emit(value);
+  }
+  
+}
+
+configuring child template file
+-------------------------------
+<label for="item-input">Add an item:</label>
+<input type="text" id="item-input" #newItem>
+<button type="button" (click)="addNewItem(newItem.value)">Add to parent's list</button>
+
+configuring the parent component
+--------------------------------
+export class AppComponent {
+  items = ['item1', 'item2', 'item3', 'item4'];
+
+  addItem(newItem: string) {
+    this.items.push(newItem);
+  }
+}
+
+configuring the parent template
+-------------------------------
+bind the parent's method to the child's event.
+<app-item-output (newItemEvent)="addItem($event)"></app-item-output>
+
+To see the @Output() working, add the following to the parent's template:
+<ul>
+  <li *ngFor="let item of items">{{item}}</li>
+</ul>
+
+
+PIPES
+=====
+-> these are used in the template
+-> used to transform the value
+-> example simple pipe : {value | uppercase}
+-> example pipe with parameter : {value | pipename : param1 : param2}
+								 {{ amount | currency:'EUR' }}
+								 {{ amount | currency:'EUR':'Euros '}}
+-> example of chained pipe : {{ birthday | date | uppercase}}
+
+
+creating custom pipes
+---------------------
+-> command to create the pipe : ng g pipe pipe_name
+-> create a class , decorate with @Pipe({name : 'uppercase'}) and implement PipeTransform
+-> and override the transform method
+-> export class UppercasePipe implements PipeTransform{
+	transform(value :string):string{
+		if(!value){
+			return value;
+		}
+		if(typeof value !== 'string'){
+			return InvalidPipeArgumentError(UppercasePipe, value);
+		}
+		return value.toUppercase();
+	}
+}
+
+DIRECTIVES
+==========
+-> it is used in the template
+-> used to modify the structure / properties of html 
+-> there are some predefined directives and we can create our own directive as well
+-> predefined directives are : ngIf, ngFor, ngClass and ngSwitch
+-> types of directives 
+		- attribute directives [ngClass, ngModel]
+		- structural directives [ngIf, ngFor]
+-> Attribute directive : It modifies the apperance / behavior of the DOM
+-> Structural directive : It add / remove elements from DOM
+
+creating custom attribute directive :
+-------------------------------------
+
+
+
+
+
+
